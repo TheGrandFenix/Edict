@@ -1,0 +1,17 @@
+<resources>
+
+    <style name="EdictTheme" parent="Theme.AppCompat.Light.NoActionBar" >
+        <item name="colorAccent">@color/material_bluegray</item>
+        <item name="android:navigationBarColor">@color/material_bluegray</item>
+    </style>
+
+    <style name="EdictTheme.splash" parent="EdictTheme" >
+        <item name="android:colorBackground">@color/material_bluegray</item>
+        <item name="android:navigationBarColor">@color/material_bluegray</item>
+    </style>
+
+    <style name="EdictFlatButton" parent="Widget.AppCompat.Button.Borderless" >
+        <item name="android:textColor">@color/material_bluegray</item>
+    </style>
+
+</resources>

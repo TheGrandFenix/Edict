@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Edict</string>
+    <string name="e_mail_et_hint">E-mail</string>
+    <string name="password_et_hint">Password</string>
+    <string name="login_btn_text">Log in</string>
+    <string name="signup_btn_text">Sign up</string>
+</resources>

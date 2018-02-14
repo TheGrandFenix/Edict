@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.fenix.edict.service.NetworkService;
+
 public class SplashActivity extends Activity {
     public static final String TAG = "SPLASH_ACT";
 
@@ -13,11 +15,14 @@ public class SplashActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         //Check if user is verified
         verified = getSharedPreferences("database",0).getBoolean("verified", false);
         if (verified) {
             //Start Edict and Network Service
-            Intent intent = new Intent(this, EdictActivity.class);
+            Intent intent = new Intent(this, NetworkService.class);
+            startService(intent);
+            intent = new Intent(this, EdictActivity.class);
             startActivity(intent);
         } else {
             //Start login procedure

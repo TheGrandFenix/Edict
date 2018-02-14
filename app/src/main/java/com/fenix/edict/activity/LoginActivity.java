@@ -38,9 +38,7 @@ public class LoginActivity extends Activity {
             intent.setClass(this, NetworkService.class);
             intent.putExtras(extras);
             startService(intent);
-
-        } else {
-            //Handle invalid login
+            setContentView(R.layout.activity_login_loading);
         }
     }
 
@@ -51,8 +49,6 @@ public class LoginActivity extends Activity {
             Bundle extras = new Bundle();
             extras.putString("email", email);
             extras.putString("password", password);
-        } else {
-            //Handle invalid login
         }
     }
 }

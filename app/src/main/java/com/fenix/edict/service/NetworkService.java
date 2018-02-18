@@ -2,14 +2,10 @@ package com.fenix.edict.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
-
-import com.fenix.edict.activity.EdictActivity;
-
 
 public class NetworkService extends Service {
     public static final String TAG = "NET_SERVICE";
@@ -21,30 +17,32 @@ public class NetworkService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        SharedPreferences localData = getSharedPreferences("database", 0);
+
+        //Read login details from intent if available
         if (intent != null) {
-            //Read login details
             Bundle extras = intent.getExtras();
             if (extras != null) {
-                String email = extras.getString("email");
-                String password = extras.getString("password");
-                attemptConnection(email, password);
+                String email = extras.getString("email", null);
+                String password = extras.getString("password", null);
+                if (email != null && password != null) attemptConnection(email, password);
             }
-        } else {
-            String auth = getSharedPreferences("database", 0).getString("auth", "");
-            if (!auth.equals(""))
-                attemptConnection(auth);
-            else
-                Log.d("TAG", "Service idle...");
-        }
+
+        //Login with local details if service was run with no intent
+        } else if (localData.getBoolean("verified", false)) {
+            String email = localData.getString("email", null);
+            String password = localData.getString("password", null);
+            if (email != null && password != null) attemptConnection(email, password);
+
+        //Mark service as idle if no login was performed
+        } else
+            Log.d(TAG, "Service idle...");
 
         return START_STICKY;
     }
 
+    //Connect to server using provided credentials
     private void attemptConnection(String email, String password) {
-
-    }
-
-    private void attemptConnection(String auth) {
-
+        Log.d(TAG, "Attempting connection...");
     }
 }

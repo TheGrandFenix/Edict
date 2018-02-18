@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.EditText;
 
 import com.fenix.edict.R;
-import com.fenix.edict.service.NetworkService;
+
+import static com.fenix.edict.service.NetworkService.*;
 
 public class LoginActivity extends Activity {
     public static final String TAG = "LOGIN_ACT";
@@ -38,10 +40,10 @@ public class LoginActivity extends Activity {
             extras.putString("email", email);
             extras.putString("password", password);
 
-            //Start service with login details
-            Intent intent = new Intent(this, NetworkService.class);
+            //Request login - broadcast to NetworkService
+            Intent intent = new Intent(LOGIN);
             intent.putExtras(extras);
-            startService(intent);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             //Start loading visual layout
             setContentView(R.layout.activity_login_loading);

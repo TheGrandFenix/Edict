@@ -9,25 +9,19 @@ import com.fenix.edict.service.NetworkService;
 public class SplashActivity extends Activity {
     public static final String TAG = "SPLASH_ACT";
 
-    private Boolean verified;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        startService(new Intent(this, NetworkService.class));
 
         //Check if user is verified
-        verified = getSharedPreferences("database",0).getBoolean("verified", false);
+        Boolean verified = getSharedPreferences("database",0).getBoolean("verified", false);
         if (verified) {
             //Start Edict and Network Service
-            Intent intent = new Intent(this, NetworkService.class);
-            startService(intent);
-            intent = new Intent(this, EdictActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, EdictActivity.class));
         } else {
             //Start login procedure
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, LoginActivity.class));
         }
 
         finish();

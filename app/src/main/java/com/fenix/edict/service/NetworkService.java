@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -12,11 +11,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class NetworkService extends Service {
-    public static final String TAG = "NET_SERVICE";
+    private static final String TAG = "NET_SERVICE";
 
     public static final String REGISTER = "edict_register";
     public static final String LOGIN = "edict_login";
     public static final String LOGOUT = "edict_logout";
+    public static final String SEND_MESSAGE = "edict_send";
 
     public static Connection connection = new Connection();
     private static HandlerThread handlerThread;
@@ -66,6 +66,11 @@ public class NetworkService extends Service {
                 case LOGOUT:
                     handler.post(() -> connection.logout());
                     break;
+
+                //Handle message sending request
+                case SEND_MESSAGE:
+                    handler.post(() -> connection.sendMessage(3, intent.getExtras().getString("message")));
+                    break;
             }
         }
     };
@@ -80,6 +85,7 @@ public class NetworkService extends Service {
 
         //Disconnect from server
         connection.disconnect();
+        connection.stopThreads();
 
         //Ends network thread
         handlerThread.quit();

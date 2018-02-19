@@ -11,7 +11,7 @@ import com.fenix.edict.service.NetworkService;
 import static com.fenix.edict.service.NetworkService.LOGIN;
 
 public class SplashActivity extends Activity {
-    public static final String TAG = "SPLASH_ACT";
+    private static final String TAG = "SPLASH_ACT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

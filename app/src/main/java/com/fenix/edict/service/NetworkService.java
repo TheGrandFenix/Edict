@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -18,7 +20,8 @@ public class NetworkService extends Service {
     public static final String LOGIN = "edict_login";
     public static final String LOGOUT = "edict_logout";
 
-    public static boolean serviceConnected = false;
+    public static Connection connection;
+    private static Handler handler;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -30,6 +33,14 @@ public class NetworkService extends Service {
         //Get database reference
         SharedPreferences localData = getSharedPreferences("database", 0);
 
+        //Setup connection and executor thread
+        new Thread(() -> {
+            connection = new Connection();
+            Looper.prepare();
+            handler = new Handler();
+            Looper.loop();
+        }).start();
+
         //Create intent filter for service actions
         IntentFilter broadcastFilter = new IntentFilter();
         broadcastFilter.addAction(LOGIN);
@@ -39,15 +50,8 @@ public class NetworkService extends Service {
         //Register broadcast receiver
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, broadcastFilter);
 
-        //Login with local details if verified
-        if (localData.getBoolean("verified", false)) {
-            String email = localData.getString("email", null);
-            String password = localData.getString("password", null);
-            if (email != null && password != null) attemptConnection(email, password);
-
-        //Report service as idle if no login was performed
-        } else
-            Log.d(TAG, "Service idle...");
+        //Log successful service startup
+        Log.d(TAG, "Service ready...");
 
         return START_STICKY;
     }
@@ -78,8 +82,10 @@ public class NetworkService extends Service {
     //Connect to server using provided credentials
     private void attemptConnection(String email, String password) {
         Log.d(TAG, "Attempting connection...");
+        handler.post(() -> connection.connect());
     }
 
+    //Unregister receiver when service is destroyed
     @Override
     public void onDestroy() {
         super.onDestroy();

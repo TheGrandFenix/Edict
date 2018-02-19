@@ -5,11 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -20,7 +18,8 @@ public class NetworkService extends Service {
     public static final String LOGIN = "edict_login";
     public static final String LOGOUT = "edict_logout";
 
-    public static Connection connection;
+    public static Connection connection = new Connection();
+    private static HandlerThread handlerThread;
     private static Handler handler;
 
     @Override
@@ -30,25 +29,17 @@ public class NetworkService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //Get database reference
-        SharedPreferences localData = getSharedPreferences("database", 0);
+        //Create network thread
+        handlerThread = new HandlerThread("network_thread");
 
-        //Setup connection and executor thread
-        new Thread(() -> {
-            connection = new Connection();
-            Looper.prepare();
-            handler = new Handler();
-            Looper.loop();
-        }).start();
+        //Get network thread handler
+        handler = new Handler(handlerThread.getLooper());
 
-        //Create intent filter for service actions
-        IntentFilter broadcastFilter = new IntentFilter();
-        broadcastFilter.addAction(LOGIN);
-        broadcastFilter.addAction(REGISTER);
-        broadcastFilter.addAction(LOGOUT);
+        //Establish connection to server
+        handler.post(() -> connection.connect());
 
         //Register broadcast receiver
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, broadcastFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
         //Log successful service startup
         Log.d(TAG, "Service ready...");
@@ -61,34 +52,38 @@ public class NetworkService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null) switch (intent.getAction()) {
+                //Handle registration request
                 case REGISTER:
+                    handler.post(() -> connection.register(intent.getExtras()));
                     break;
 
+                //Handle login request
                 case LOGIN:
-                    Bundle extras = intent.getExtras();
-                    if (extras != null) {
-                        String email = extras.getString("email", null);
-                        String password = extras.getString("password", null);
-                        if (email != null && password != null) attemptConnection(email, password);
-                    }
+                    handler.post(() -> connection.login(intent.getExtras()));
                     break;
 
+                //Handle logout request
                 case LOGOUT:
+                    handler.post(() -> connection.logout());
                     break;
             }
         }
     };
 
-    //Connect to server using provided credentials
-    private void attemptConnection(String email, String password) {
-        Log.d(TAG, "Attempting connection...");
-        handler.post(() -> connection.connect());
-    }
-
-    //Unregister receiver when service is destroyed
+    //Cleanup when service is destroyed
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        //Unregister receiver
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+
+        //Disconnect from server
+        connection.disconnect();
+
+        //Ends network thread
+        handlerThread.quit();
+
+        Log.d(TAG, "Service destroyed...");
     }
 }

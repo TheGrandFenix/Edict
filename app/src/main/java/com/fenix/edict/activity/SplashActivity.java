@@ -2,9 +2,13 @@ package com.fenix.edict.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.fenix.edict.service.NetworkService;
+
+import static com.fenix.edict.service.NetworkService.LOGIN;
 
 public class SplashActivity extends Activity {
     public static final String TAG = "SPLASH_ACT";
@@ -14,10 +18,22 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         startService(new Intent(this, NetworkService.class));
 
+        SharedPreferences database = getSharedPreferences("database",0);
+
         //Check if user is verified
-        Boolean verified = getSharedPreferences("database",0).getBoolean("verified", false);
+        Boolean verified = database.getBoolean("verified", false);
         if (verified) {
-            //Start Edict and Network Service
+            //Create login intent
+            Intent intent = new Intent(LOGIN);
+            Bundle extras = new Bundle();
+            extras.putString("email", database.getString("email", null));
+            extras.putString("password", database.getString("password", null));
+            intent.putExtras(extras);
+
+            //Request login from service
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            //Start edict activity
             startActivity(new Intent(this, EdictActivity.class));
         } else {
             //Start login procedure

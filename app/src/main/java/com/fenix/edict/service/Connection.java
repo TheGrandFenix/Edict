@@ -30,7 +30,7 @@ public class Connection {
     private static final int LOGIN_ERROR = 4;
     private static final int TEXT_MESSAGE = 5;
 
-    private static final InetSocketAddress address = new InetSocketAddress("10.0.2.2", 2508);
+    private static final InetSocketAddress address = new InetSocketAddress("192.168.1.44", 2508);
 
     private Socket socket;
 
@@ -58,7 +58,7 @@ public class Connection {
     }
 
     //Attempt socket connection to the server
-    void connect() {
+    private void connect() {
         execHandler.post(() -> {
             Log.d(TAG, "Attempting connection...");
             try {
@@ -89,6 +89,7 @@ public class Connection {
     }
 
     void register(Bundle extras) {
+        if (!isConnected) connect();
         String email = extras.getString("email");
         String password = extras.getString("password");
 
@@ -99,7 +100,7 @@ public class Connection {
 
     //Send message with content to server [full message]
     void sendMessage(int messageType, String message) {
-        try {
+        if (isConnected && output != null) try {
             output.write(messageType);
             output.write(message);
             output.newLine();
@@ -163,9 +164,9 @@ public class Connection {
     void disconnect() {
         try {
             //Close streams and socket
-            output.close();
-            input.close();
-            socket.close();
+            if (output != null) output.close();
+            if (input != null) input.close();
+            if (socket != null) socket.close();
             Log.d(TAG, "Successfully closed socket...");
         } catch (IOException e) {
             Log.d(TAG, "Failed to manually close socket..." + e);

@@ -4,12 +4,15 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.fenix.edict.activity.EdictActivity;
 import com.fenix.edict.filters.ServiceIntentFilter;
 
 public class NetworkService extends Service {
@@ -44,15 +47,21 @@ public class NetworkService extends Service {
             //Get network thread handler
             handler = new Handler(handlerThread.getLooper());
 
-            //Establish connection to server
-            handler.post(() -> connection.connect());
-
             //Get broadcast manager and register receiver
             broadcastManager = LocalBroadcastManager.getInstance(this);
             broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
             //Log successful service startup
             Log.d(TAG, "Service ready...");
+
+            //Attempt login if user was verified
+            SharedPreferences database = getSharedPreferences("database", 0);
+            if (database.getBoolean("verified", false)) {
+                Bundle extras = new Bundle();
+                extras.putString("email", database.getString("email", null));
+                extras.putString("password", database.getString("password", null));
+                handler.post(() -> connection.login(extras));
+            }
         }
         return START_STICKY;
     }
@@ -64,6 +73,7 @@ public class NetworkService extends Service {
             if (intent.getAction() != null) switch (intent.getAction()) {
                 //Handle registration request
                 case REGISTER:
+                    Log.d(TAG, "Attempting registration...");
                     handler.post(() -> connection.register(intent.getExtras()));
                     break;
 
@@ -75,6 +85,7 @@ public class NetworkService extends Service {
 
                 //Handle logout request
                 case LOGOUT:
+                    Log.d(TAG, "Logging out...");
                     handler.post(() -> connection.logout());
                     break;
 
@@ -85,6 +96,24 @@ public class NetworkService extends Service {
             }
         }
     };
+
+    //Cleanup when service is reset
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+
+        //Unregister receiver
+        broadcastManager.unregisterReceiver(broadcastReceiver);
+
+        //Disconnect from server
+        connection.disconnect();
+        connection.stopThreads();
+
+        //Ends network thread
+        handlerThread.quit();
+
+        Log.d(TAG, "Service destroyed...");
+    }
 
     //Cleanup when service is destroyed
     @Override

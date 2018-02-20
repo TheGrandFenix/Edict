@@ -12,6 +12,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.fenix.edict.R;
+import com.fenix.edict.filters.LoginIntentFilter;
+import com.fenix.edict.service.Connection;
+import com.fenix.edict.service.NetworkService;
 
 import static com.fenix.edict.service.NetworkService.*;
 
@@ -24,6 +27,8 @@ public class LoginActivity extends Activity {
     private EditText emailInput;
     private EditText passwordInput;
 
+    private LocalBroadcastManager broadcastManager;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +37,9 @@ public class LoginActivity extends Activity {
         //Define layout elements
         emailInput = findViewById(R.id.email_et);
         passwordInput = findViewById(R.id.password_et);
+
+        //Get broadcast manager
+        broadcastManager = LocalBroadcastManager.getInstance(this);
     }
 
     //Restart service with login intent - on button click [REPLACE WITH BROADCAST]
@@ -58,7 +66,24 @@ public class LoginActivity extends Activity {
 
     //Restart service with registration intent - on button click
     public void onSignup(View view) {
-        //
+        //Get credentials from input fields
+        String email = String.valueOf(emailInput.getText());
+        String password = String.valueOf(passwordInput.getText());
+
+        if (!email.equals("") && !password.equals("")) {
+            //Create data bundle with email and password
+            Bundle extras = new Bundle();
+            extras.putString("email", email);
+            extras.putString("password", password);
+
+            //Request login - broadcast to NetworkService
+            Intent intent = new Intent(REGISTER);
+            intent.putExtras(extras);
+            broadcastManager.sendBroadcast(intent);
+
+            //Start loading visual layout
+            setContentView(R.layout.activity_login_loading);
+        }
     }
 
     //Define service broadcast actions
@@ -66,11 +91,13 @@ public class LoginActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null) switch (intent.getAction()) {
+                //Proceed to EdictActivity if login was successful
                 case LOGIN_ACK:
                     startActivity(new Intent(getApplicationContext(), EdictActivity.class));
                     finish();
                     break;
 
+                //Display error message if login failed
                 case LOGIN_ERR:
                     Toast.makeText(context, "Error on login!", Toast.LENGTH_LONG).show();
                     break;
@@ -78,15 +105,23 @@ public class LoginActivity extends Activity {
         }
     };
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-    }
-
+    //Register receiver when app is resumed
     @Override
     protected void onResume() {
         super.onResume();
+        broadcastManager.registerReceiver(broadcastReceiver, new LoginIntentFilter());
 
+        //Proceed to EdictActivity if successful login occurred while layout was paused
+        if (NetworkService.connection.isLoggedIn) {
+            startActivity(new Intent(getApplicationContext(), EdictActivity.class));
+            finish();
+        }
+    }
+
+    //Unregister receiver when app is paused
+    @Override
+    protected void onPause() {
+        super.onPause();
+        broadcastManager.unregisterReceiver(broadcastReceiver);
     }
 }

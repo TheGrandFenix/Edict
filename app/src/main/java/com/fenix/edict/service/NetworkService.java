@@ -10,6 +10,8 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.fenix.edict.filters.ServiceIntentFilter;
+
 public class NetworkService extends Service {
     private static final String TAG = "NET_SERVICE";
 
@@ -21,6 +23,8 @@ public class NetworkService extends Service {
     public static Connection connection = new Connection();
     private static HandlerThread handlerThread;
     private static Handler handler;
+
+    static LocalBroadcastManager broadcastManager;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -38,8 +42,9 @@ public class NetworkService extends Service {
         //Establish connection to server
         handler.post(() -> connection.connect());
 
-        //Register broadcast receiver
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, new ServiceIntentFilter());
+        //Get broadcast manager and register receiver
+        broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
         //Log successful service startup
         Log.d(TAG, "Service ready...");
@@ -81,7 +86,7 @@ public class NetworkService extends Service {
         super.onDestroy();
 
         //Unregister receiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+        broadcastManager.unregisterReceiver(broadcastReceiver);
 
         //Disconnect from server
         connection.disconnect();

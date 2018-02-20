@@ -1,9 +1,13 @@
 package com.fenix.edict.service;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.fenix.edict.filters.LoginIntentFilter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -13,13 +17,18 @@ import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-class Connection {
+import static com.fenix.edict.activity.LoginActivity.LOGIN_ACK;
+import static com.fenix.edict.activity.LoginActivity.LOGIN_ERR;
+
+public class Connection {
     private static final String TAG = "CONN";
 
-    public static final int REGISTRATION_REQUEST = 0;
-    public static final int LOGIN_REQUEST = 1;
-    public static final int LOGOUT_REQUEST = 2;
-    public static final int TEXT_MESSAGE = 3;
+    private static final int REGISTRATION_REQUEST = 0;
+    private static final int LOGIN_REQUEST = 1;
+    private static final int LOGOUT_REQUEST = 2;
+    private static final int LOGIN_SUCCESS = 3;
+    private static final int LOGIN_ERROR = 4;
+    private static final int TEXT_MESSAGE = 5;
 
     private static final InetSocketAddress address = new InetSocketAddress("home.edict.cc", 2508);
 
@@ -33,8 +42,8 @@ class Connection {
     private HandlerThread inThread;
     private Handler inHandler;
 
-    public static boolean isConnected = false;
-    public static boolean isLoggedIn = false;
+    public boolean isConnected = false;
+    public boolean isLoggedIn = false;
 
     Connection() {
         //Create executor thread
@@ -56,6 +65,7 @@ class Connection {
                 socket.connect(address, 1000);
                 output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                 input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                isConnected = true;
                 Log.d(TAG, "Successfully connected to server...");
             } catch (IOException e) {
                 //Log connection failure
@@ -66,32 +76,93 @@ class Connection {
     }
 
     void login(Bundle extras) {
+        if (!isConnected) connect();
         String email = extras.getString("email");
         String password = extras.getString("password");
+
         String serverAuth = email + "[#]" + password;
+
         sendMessage(LOGIN_REQUEST, serverAuth);
     }
 
     void register(Bundle extras) {
         String email = extras.getString("email");
         String password = extras.getString("password");
+
         String serverAuth = email + "[#]" + password;
+
         sendMessage(REGISTRATION_REQUEST, serverAuth);
     }
 
+    //Send message with content to server [full message]
     void sendMessage(int messageType, String message) {
         try {
             output.write(messageType);
             output.write(message);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d(TAG, "Failed to send message, disconnecting...");
+            logout();
+            disconnect();
         }
     }
 
-    void logout() {
-        sendMessage(LOGOUT_REQUEST, "logout");
+    //Send stub message to server [action request]
+    void sendMessage(int messageType) {
+        try {
+            output.write(messageType);
+        } catch (IOException e) {
+            Log.d(TAG, "Failed to send message, disconnecting...");
+            logout();
+            disconnect();
+        }
     }
 
+    //Listen for incoming server messages
+    private void listen() {
+        while (isConnected) {
+            try {
+                //Receive message type and content
+                int messageType = input.read();
+                String message = input.readLine();
+
+                //Handle message
+                execHandler.post(() -> handleMessage(messageType, message));
+
+            } catch (IOException e) {
+                Log.d(TAG, "Failed to read message from server, disconnecting...");
+                logout();
+                disconnect();
+            }
+        }
+    }
+
+    //Process received message
+    private void handleMessage(int messageType, String message) {
+        switch (messageType) {
+            case LOGIN_SUCCESS:
+                isLoggedIn = true;
+                NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ACK));
+                inHandler.post(this::listen);
+                break;
+
+            case LOGIN_ERROR:
+                isLoggedIn = false;
+                NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ERR));
+                break;
+
+            case TEXT_MESSAGE:
+                //NetworkService.broadcastManager.sendBroadcast(NEW_MESSAGE);
+                break;
+        }
+    }
+
+    //Send logout request to server
+    void logout() {
+        sendMessage(LOGOUT_REQUEST);
+        isLoggedIn = false;
+    }
+
+    //Close connection to server
     void disconnect() {
         try {
             //Close streams and socket
@@ -104,9 +175,11 @@ class Connection {
         }
 
         //Update connected state
+        isLoggedIn = false;
         isConnected = false;
     }
 
+    //Stop input and executor thread before ending this this thread
     void stopThreads() {
         if (execThread != null) execThread.quit();
         if (inThread != null) inThread.quit();

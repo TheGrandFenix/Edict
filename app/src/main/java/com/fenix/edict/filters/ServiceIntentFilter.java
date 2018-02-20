@@ -1,4 +1,4 @@
-package com.fenix.edict.service;
+package com.fenix.edict.filters;
 
 import android.content.IntentFilter;
 

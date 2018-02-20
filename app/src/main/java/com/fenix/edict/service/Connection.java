@@ -4,10 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
-import com.fenix.edict.filters.LoginIntentFilter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,7 +27,7 @@ public class Connection {
     private static final int LOGIN_ERROR = 4;
     private static final int TEXT_MESSAGE = 5;
 
-    private static final InetSocketAddress address = new InetSocketAddress("192.168.1.44", 2508);
+    private static final InetSocketAddress address = new InetSocketAddress("10.0.2.2", 2508);
 
     private Socket socket;
 
@@ -59,35 +56,38 @@ public class Connection {
 
     //Attempt socket connection to the server
     private void connect() {
-        execHandler.post(() -> {
-            Log.d(TAG, "Attempting connection...");
-            try {
-                //Create socket connected to the server
-                socket = new Socket();
-                socket.connect(address, 1000);
-                output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                isConnected = true;
-                inHandler.post(this::listen);
-                Log.d(TAG, "Successfully connected to server...");
-            } catch (IOException e) {
-                //Log connection failure
-                isConnected = false;
-                Log.d(TAG, "Failed to connect to server...\n" + e);
-            }
-        });
+        Log.d(TAG, "Attempting connection...");
+        try {
+            //Create socket connected to the server
+            socket = new Socket();
+            socket.connect(address, 1000);
+            isConnected = true;
+            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            inHandler.post(this::listen);
+            Log.d(TAG, "Successfully connected to server...");
+        } catch (IOException e) {
+            //Log connection failure
+            isConnected = false;
+            Log.d(TAG, "Failed to connect to server...\n" + e);
+        }
     }
 
+    //Send login request to server
     void login(Bundle extras) {
-        if (!isConnected) connect();
+        if (!isConnected) {
+            connect();
+        }
         String email = extras.getString("email");
         String password = extras.getString("password");
 
         String serverAuth = email + "[#]" + password;
 
+        Log.d(TAG, "Attempting login: " + serverAuth);
         sendMessage(LOGIN_REQUEST, serverAuth);
     }
 
+    //Send registration request to server
     void register(Bundle extras) {
         if (!isConnected) connect();
         String email = extras.getString("email");
@@ -99,7 +99,7 @@ public class Connection {
     }
 
     //Send message with content to server [full message]
-    void sendMessage(int messageType, String message) {
+    synchronized void sendMessage(int messageType, String message) {
         if (isConnected && output != null) try {
             output.write(messageType);
             output.write(message);

@@ -20,7 +20,7 @@ public class NetworkService extends Service {
     public static final String LOGOUT = "edict_logout";
     public static final String SEND_MESSAGE = "edict_send";
 
-    public static Connection connection = new Connection();
+    public static Connection connection;
     private static HandlerThread handlerThread;
     private static Handler handler;
 
@@ -33,22 +33,27 @@ public class NetworkService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //Create network thread
-        handlerThread = new HandlerThread("network_thread");
+        if (connection == null) {
+            //Create connection
+            connection = new Connection();
 
-        //Get network thread handler
-        handler = new Handler(handlerThread.getLooper());
+            //Create network thread
+            handlerThread = new HandlerThread("network_thread");
+            handlerThread.start();
 
-        //Establish connection to server
-        handler.post(() -> connection.connect());
+            //Get network thread handler
+            handler = new Handler(handlerThread.getLooper());
 
-        //Get broadcast manager and register receiver
-        broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
+            //Establish connection to server
+            handler.post(() -> connection.connect());
 
-        //Log successful service startup
-        Log.d(TAG, "Service ready...");
+            //Get broadcast manager and register receiver
+            broadcastManager = LocalBroadcastManager.getInstance(this);
+            broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
+            //Log successful service startup
+            Log.d(TAG, "Service ready...");
+        }
         return START_STICKY;
     }
 
@@ -64,6 +69,7 @@ public class NetworkService extends Service {
 
                 //Handle login request
                 case LOGIN:
+                    Log.d(TAG, "Attempting login...");
                     handler.post(() -> connection.login(intent.getExtras()));
                     break;
 
@@ -97,4 +103,6 @@ public class NetworkService extends Service {
 
         Log.d(TAG, "Service destroyed...");
     }
+
+
 }

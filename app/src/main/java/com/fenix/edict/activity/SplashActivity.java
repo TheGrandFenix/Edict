@@ -34,10 +34,10 @@ public class SplashActivity extends Activity {
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             //Start edict activity
-            startActivity(new Intent(this, EdictActivity.class));
+            startActivity(new Intent(this, EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
         } else {
             //Start login procedure
-            startActivity(new Intent(this, LoginActivity.class));
+            startActivity(new Intent(this, LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
         }
 
         finish();

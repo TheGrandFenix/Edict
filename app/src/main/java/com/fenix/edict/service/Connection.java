@@ -30,7 +30,7 @@ public class Connection {
     private static final int LOGIN_ERROR = 4;
     private static final int TEXT_MESSAGE = 5;
 
-    private static final InetSocketAddress address = new InetSocketAddress("home.edict.cc", 2508);
+    private static final InetSocketAddress address = new InetSocketAddress("10.0.2.2", 2508);
 
     private Socket socket;
 
@@ -48,10 +48,12 @@ public class Connection {
     Connection() {
         //Create executor thread
         execThread = new HandlerThread("conn_exec_thread");
+        execThread.start();
         execHandler = new Handler(execThread.getLooper());
 
         //Create thread for receiving server messages
         inThread = new HandlerThread("conn_in_thread");
+        inThread.start();
         inHandler = new Handler(inThread.getLooper());
     }
 
@@ -66,6 +68,7 @@ public class Connection {
                 output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                 input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 isConnected = true;
+                inHandler.post(this::listen);
                 Log.d(TAG, "Successfully connected to server...");
             } catch (IOException e) {
                 //Log connection failure
@@ -99,17 +102,8 @@ public class Connection {
         try {
             output.write(messageType);
             output.write(message);
-        } catch (IOException e) {
-            Log.d(TAG, "Failed to send message, disconnecting...");
-            logout();
-            disconnect();
-        }
-    }
-
-    //Send stub message to server [action request]
-    void sendMessage(int messageType) {
-        try {
-            output.write(messageType);
+            output.newLine();
+            output.flush();
         } catch (IOException e) {
             Log.d(TAG, "Failed to send message, disconnecting...");
             logout();
@@ -129,6 +123,7 @@ public class Connection {
                 execHandler.post(() -> handleMessage(messageType, message));
 
             } catch (IOException e) {
+                isConnected = false;
                 Log.d(TAG, "Failed to read message from server, disconnecting...");
                 logout();
                 disconnect();
@@ -138,14 +133,16 @@ public class Connection {
 
     //Process received message
     private void handleMessage(int messageType, String message) {
+        Log.d(TAG, "Received message...");
         switch (messageType) {
             case LOGIN_SUCCESS:
+                Log.d(TAG, "Login success!");
                 isLoggedIn = true;
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ACK));
-                inHandler.post(this::listen);
                 break;
 
             case LOGIN_ERROR:
+                Log.d(TAG, "Login error!");
                 isLoggedIn = false;
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ERR));
                 break;
@@ -158,7 +155,7 @@ public class Connection {
 
     //Send logout request to server
     void logout() {
-        sendMessage(LOGOUT_REQUEST);
+        sendMessage(LOGOUT_REQUEST, "logout");
         isLoggedIn = false;
     }
 

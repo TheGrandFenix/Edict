@@ -15,4 +15,9 @@ public class EdictActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edict);
     }
+
+    @Override
+    public void onBackPressed() {
+        //Do not react to back pressed
+    }
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -93,12 +94,23 @@ public class LoginActivity extends Activity {
             if (intent.getAction() != null) switch (intent.getAction()) {
                 //Proceed to EdictActivity if login was successful
                 case LOGIN_ACK:
-                    startActivity(new Intent(getApplicationContext(), EdictActivity.class));
+                    SharedPreferences.Editor localData = getSharedPreferences("database", 0).edit();
+                    localData.putString("email", emailInput.getText().toString());
+                    localData.putString("password", passwordInput.getText().toString());
+                    localData.putBoolean("verified", true);
+                    localData.apply();
+                    startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
                     finish();
                     break;
 
                 //Display error message if login failed
                 case LOGIN_ERR:
+                    setContentView(R.layout.activity_login);
+
+                    //Redefine layout elements
+                    emailInput = findViewById(R.id.email_et);
+                    passwordInput = findViewById(R.id.password_et);
+
                     Toast.makeText(context, "Error on login!", Toast.LENGTH_LONG).show();
                     break;
             }
@@ -123,5 +135,10 @@ public class LoginActivity extends Activity {
     protected void onPause() {
         super.onPause();
         broadcastManager.unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    public void onBackPressed() {
+        //Do not react to back button
     }
 }

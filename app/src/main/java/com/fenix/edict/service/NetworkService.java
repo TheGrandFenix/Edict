@@ -63,6 +63,7 @@ public class NetworkService extends Service {
                 handler.post(() -> connection.login(extras));
             }
         }
+
         return START_STICKY;
     }
 

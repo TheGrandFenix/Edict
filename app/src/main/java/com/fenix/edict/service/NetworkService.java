@@ -51,6 +51,9 @@ public class NetworkService extends Service {
             broadcastManager = LocalBroadcastManager.getInstance(this);
             broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
+            //Log successful service startup
+            Log.d(TAG, "Service ready...");
+
             //Attempt login if user was verified
             SharedPreferences database = getSharedPreferences("database", 0);
             if (database.getBoolean("verified", false)) {
@@ -60,10 +63,6 @@ public class NetworkService extends Service {
                 handler.post(() -> connection.login(extras));
             }
         }
-
-        //Log successful service startup
-        Log.d(TAG, "Service ready...");
-
         return START_STICKY;
     }
 
@@ -74,16 +73,19 @@ public class NetworkService extends Service {
             if (intent.getAction() != null) switch (intent.getAction()) {
                 //Handle registration request
                 case REGISTER:
+                    Log.d(TAG, "Attempting registration...");
                     handler.post(() -> connection.register(intent.getExtras()));
                     break;
 
                 //Handle login request
                 case LOGIN:
+                    Log.d(TAG, "Attempting login...");
                     handler.post(() -> connection.login(intent.getExtras()));
                     break;
 
                 //Handle logout request
                 case LOGOUT:
+                    Log.d(TAG, "Logging out...");
                     handler.post(() -> connection.logout());
                     break;
 

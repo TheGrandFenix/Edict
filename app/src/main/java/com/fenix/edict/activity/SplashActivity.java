@@ -4,15 +4,15 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
+import com.fenix.edict.R;
 import com.fenix.edict.filters.LoginIntentFilter;
 import com.fenix.edict.service.NetworkService;
 
-import static com.fenix.edict.activity.LoginActivity.LOGIN_ACK;
-import static com.fenix.edict.service.NetworkService.LOGIN;
+import static com.fenix.edict.activity.LoginActivity.*;
 
 public class SplashActivity extends Activity {
     private static final String TAG = "SPLASH_ACT";
@@ -40,6 +40,12 @@ public class SplashActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null) switch (intent.getAction()) {
                 case LOGIN_ACK:
+                    broadcastManager.unregisterReceiver(broadcastReceiver);
+                    startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                    finish();
+                    break;
+
+                case LOGIN_ERR:
                     broadcastManager.unregisterReceiver(broadcastReceiver);
                     startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
                     finish();

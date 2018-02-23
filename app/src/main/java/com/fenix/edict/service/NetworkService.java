@@ -88,6 +88,7 @@ public class NetworkService extends Service {
                 case LOGOUT:
                     Log.d(TAG, "Logging out...");
                     handler.post(() -> connection.logout());
+                    database.edit().putBoolean("verified", false).apply();
                     break;
 
                 //Handle message sending request

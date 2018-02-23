@@ -147,9 +147,7 @@ public class Connection {
             case LOGIN_ERROR:
                 Log.d(TAG, "Login error!");
                 isLoggedIn = false;
-                SharedPreferences.Editor data = NetworkService.database.edit();
-                data.putBoolean("verified", false);
-                data.apply();
+                NetworkService.database.edit().putBoolean("verified", false).apply();
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ERR));
                 break;
 

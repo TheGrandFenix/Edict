@@ -27,6 +27,13 @@ public class SplashActivity extends Activity {
 
         startService(new Intent(this, NetworkService.class));
 
+        //Start chat if already logged in by service
+        if(NetworkService.connection.isLoggedIn) {
+            broadcastManager.unregisterReceiver(broadcastReceiver);
+            startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+            finish();
+        }
+
         //Start login procedure if unverified
         if (!getSharedPreferences("database", 0).getBoolean("verified", false)) {
             broadcastManager.unregisterReceiver(broadcastReceiver);
@@ -47,7 +54,7 @@ public class SplashActivity extends Activity {
 
                 case LOGIN_ERR:
                     broadcastManager.unregisterReceiver(broadcastReceiver);
-                    startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                    startActivity(new Intent(getApplicationContext(), LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
                     finish();
                     break;
             }

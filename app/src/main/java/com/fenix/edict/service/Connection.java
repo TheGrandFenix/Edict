@@ -40,8 +40,8 @@ public class Connection {
     private HandlerThread inThread;
     private Handler inHandler;
 
-    private boolean isConnected = false;
-    public boolean isLoggedIn = false;
+    private static boolean isConnected = false;
+    public static boolean isLoggedIn = false;
 
     Connection() {
         //Create executor thread
@@ -82,7 +82,7 @@ public class Connection {
         String email = extras.getString("email");
         String password = extras.getString("password");
 
-        String serverAuth = email + "[#]" + password;
+        String serverAuth = email + "|" + password;
 
         Log.d(TAG, "Attempting login: " + serverAuth);
         sendMessage(LOGIN_REQUEST, serverAuth);
@@ -95,7 +95,7 @@ public class Connection {
         String password = extras.getString("password");
         String nickname = extras.getString("nickname");
 
-        String serverAuth = email + "[#]" + password + "[=]" + nickname;
+        String serverAuth = email + "|" + password + "|" + nickname;
 
         sendMessage(REGISTRATION_REQUEST, serverAuth);
     }

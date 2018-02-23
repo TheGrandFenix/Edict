@@ -4,4 +4,8 @@
     <string name="password_et_hint">Password</string>
     <string name="login_btn_text">Log in</string>
     <string name="signup_btn_text">Sign up</string>
+    <string name="nickname">Nickname</string>
+    <string name="welcome_text">Welcome to Edict!</string>
+    <string name="registration_btn_text">Complete Registration</string>
+    <string name="registration_message">Please choose a name to be displayed on your messages....</string>
 </resources>

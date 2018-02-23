@@ -28,6 +28,9 @@ public class LoginActivity extends Activity {
     private EditText emailInput;
     private EditText passwordInput;
 
+    private String registerEmail;
+    private String registerPass;
+
     private LocalBroadcastManager broadcastManager;
 
     @Override
@@ -68,23 +71,29 @@ public class LoginActivity extends Activity {
     //Restart service with registration intent - on button click
     public void onSignup(View view) {
         //Get credentials from input fields
-        String email = String.valueOf(emailInput.getText());
-        String password = String.valueOf(passwordInput.getText());
+        registerEmail = String.valueOf(emailInput.getText());
+        registerPass = String.valueOf(passwordInput.getText());
 
-        if (!email.equals("") && !password.equals("")) {
-            //Create data bundle with email and password
-            Bundle extras = new Bundle();
-            extras.putString("email", email);
-            extras.putString("password", password);
+        //Transition to nickname layout
+        setContentView(R.layout.activity_login_username);
+    }
 
-            //Request login - broadcast to NetworkService
-            Intent intent = new Intent(REGISTER);
-            intent.putExtras(extras);
-            broadcastManager.sendBroadcast(intent);
+    public void onFinalizeSignup(View view) {
+        EditText nicknameInput = findViewById(R.id.nickname_et);
 
-            //Start loading visual layout
-            setContentView(R.layout.activity_login_loading);
-        }
+        //Create data bundle with email and password
+        Bundle extras = new Bundle();
+        extras.putString("email", registerEmail);
+        extras.putString("password", registerPass);
+        extras.putString("nickname", nicknameInput.getText().toString());
+
+        //Request login - broadcast to NetworkService
+        Intent intent = new Intent(REGISTER);
+        intent.putExtras(extras);
+        broadcastManager.sendBroadcast(intent);
+
+        //Get nickname
+        setContentView(R.layout.activity_login_loading);
     }
 
     //Define service broadcast actions
@@ -127,6 +136,12 @@ public class LoginActivity extends Activity {
         if (NetworkService.connection.isLoggedIn) {
             startActivity(new Intent(getApplicationContext(), EdictActivity.class));
             finish();
+        } else {
+            setContentView(R.layout.activity_login);
+
+            //Redefine layout elements
+            emailInput = findViewById(R.id.email_et);
+            passwordInput = findViewById(R.id.password_et);
         }
     }
 

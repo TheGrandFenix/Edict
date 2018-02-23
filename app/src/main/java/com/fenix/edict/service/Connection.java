@@ -1,6 +1,7 @@
 package com.fenix.edict.service;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -39,7 +40,7 @@ public class Connection {
     private HandlerThread inThread;
     private Handler inHandler;
 
-    public boolean isConnected = false;
+    private boolean isConnected = false;
     public boolean isLoggedIn = false;
 
     Connection() {
@@ -92,8 +93,9 @@ public class Connection {
         if (!isConnected) connect();
         String email = extras.getString("email");
         String password = extras.getString("password");
+        String nickname = extras.getString("nickname");
 
-        String serverAuth = email + "[#]" + password;
+        String serverAuth = email + "[#]" + password + "[=]" + nickname;
 
         sendMessage(REGISTRATION_REQUEST, serverAuth);
     }
@@ -145,11 +147,20 @@ public class Connection {
             case LOGIN_ERROR:
                 Log.d(TAG, "Login error!");
                 isLoggedIn = false;
+                SharedPreferences.Editor data = NetworkService.database.edit();
+                data.putBoolean("verified", false);
+                data.apply();
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ERR));
                 break;
 
             case TEXT_MESSAGE:
-                //NetworkService.broadcastManager.sendBroadcast(NEW_MESSAGE);
+                /*
+                Intent newMessage = new Intent(NEW_MESSAGE_RECEIVED);
+                Bundle extras = new Bundle();
+                extras.putString("message", message);
+                newMessage.putExtras(extras);
+                NetworkService.broadcastManager.sendBroadcast(newMessage);
+                */
                 break;
         }
     }

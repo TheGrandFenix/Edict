@@ -28,6 +28,7 @@ public class NetworkService extends Service {
     private static Handler handler;
 
     static LocalBroadcastManager broadcastManager;
+    static SharedPreferences database;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -55,7 +56,7 @@ public class NetworkService extends Service {
             Log.d(TAG, "Service ready...");
 
             //Attempt login if user was verified
-            SharedPreferences database = getSharedPreferences("database", 0);
+            database = getSharedPreferences("database", 0);
             if (database.getBoolean("verified", false)) {
                 Bundle extras = new Bundle();
                 extras.putString("email", database.getString("email", null));

@@ -133,7 +133,7 @@ public class LoginActivity extends Activity {
         broadcastManager.registerReceiver(broadcastReceiver, new LoginIntentFilter());
 
         //Proceed to EdictActivity if successful login occurred while layout was paused
-        if (NetworkService.connection.isLoggedIn) {
+        if (Connection.isLoggedIn) {
             startActivity(new Intent(getApplicationContext(), EdictActivity.class));
             finish();
         } else {

@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -71,7 +73,7 @@ public class NetworkService extends Service {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() != null) switch (intent.getAction()) {
+            if (intent.getAction() != null && intent.getExtras() != null) switch (intent.getAction()) {
                 //Handle registration request
                 case REGISTER:
                     Log.d(TAG, "Attempting registration...");

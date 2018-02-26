@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -14,7 +12,6 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.fenix.edict.activity.EdictActivity;
 import com.fenix.edict.filters.ServiceIntentFilter;
 
 public class NetworkService extends Service {
@@ -25,7 +22,7 @@ public class NetworkService extends Service {
     public static final String LOGOUT = "edict_logout";
     public static final String SEND_MESSAGE = "edict_send";
 
-    public static Connection connection;
+    public Connection connection;
     private static HandlerThread handlerThread;
     private static Handler handler;
 
@@ -41,7 +38,7 @@ public class NetworkService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (connection == null) {
             //Create connection
-            connection = new Connection();
+            connection = new Connection(this);
 
             //Create network thread
             handlerThread = new HandlerThread("network_thread");
@@ -54,12 +51,13 @@ public class NetworkService extends Service {
             broadcastManager = LocalBroadcastManager.getInstance(this);
             broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
-            //Log successful service startup
-            Log.d(TAG, "Service ready...");
-
             //Attempt login if verified
             attemptLogin();
         }
+
+        //Log successful service startup
+        Log.d(TAG, "Service ready...");
+
         return START_STICKY;
     }
 
@@ -91,22 +89,9 @@ public class NetworkService extends Service {
                 case SEND_MESSAGE:
                     handler.post(() -> connection.sendMessage(3, intent.getExtras().getString("message")));
                     break;
-
-                //Handle network changes
-                case ConnectivityManager.CONNECTIVITY_ACTION:
-                    checkConnectivity();
-                    break;
             }
         }
     };
-
-    //Check if network connection has been restored
-    private void checkConnectivity() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = null;
-        if (connectivityManager != null) activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) attemptLogin();
-    }
 
     private void attemptLogin() {
         //Attempt login if user was verified
@@ -154,6 +139,5 @@ public class NetworkService extends Service {
 
         Log.d(TAG, "Service destroyed...");
     }
-
 
 }

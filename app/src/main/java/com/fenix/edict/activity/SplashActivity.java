@@ -6,10 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
 
-import com.fenix.edict.R;
 import com.fenix.edict.filters.LoginIntentFilter;
+import com.fenix.edict.service.Connection;
 import com.fenix.edict.service.NetworkService;
 
 import static com.fenix.edict.activity.LoginActivity.*;
@@ -28,7 +27,7 @@ public class SplashActivity extends Activity {
         startService(new Intent(this, NetworkService.class));
 
         //Start chat if already logged in by service
-        if(NetworkService.connection.isLoggedIn) {
+        if(Connection.isLoggedIn) {
             broadcastManager.unregisterReceiver(broadcastReceiver);
             startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
             finish();

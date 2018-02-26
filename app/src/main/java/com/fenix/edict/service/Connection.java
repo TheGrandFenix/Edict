@@ -1,7 +1,7 @@
 package com.fenix.edict.service;
 
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -15,8 +15,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import static com.fenix.edict.activity.LoginActivity.LOGIN_ACK;
-import static com.fenix.edict.activity.LoginActivity.LOGIN_ERR;
+import static com.fenix.edict.activity.LoginActivity.*;
 
 public class Connection {
     private static final String TAG = "CONN";
@@ -28,7 +27,9 @@ public class Connection {
     private static final int LOGIN_ERROR = 4;
     private static final int TEXT_MESSAGE = 5;
 
-    private static final InetSocketAddress address = new InetSocketAddress("10.0.2.2", 2508);
+    private Context serviceContext;
+
+    private final static String address = ("192.168.1.25");
 
     private Socket socket;
 
@@ -43,7 +44,7 @@ public class Connection {
     private static boolean isConnected = false;
     public static boolean isLoggedIn = false;
 
-    Connection() {
+    Connection(Context context) {
         //Create executor thread
         execThread = new HandlerThread("conn_exec_thread");
         execThread.start();
@@ -53,6 +54,8 @@ public class Connection {
         inThread = new HandlerThread("conn_in_thread");
         inThread.start();
         inHandler = new Handler(inThread.getLooper());
+
+        serviceContext = context;
     }
 
     //Attempt socket connection to the server
@@ -61,7 +64,7 @@ public class Connection {
         try {
             //Create socket connected to the server
             socket = new Socket();
-            socket.connect(address, 1000);
+            socket.connect(new InetSocketAddress(address, 2508), 3000);
             isConnected = true;
             output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -111,6 +114,8 @@ public class Connection {
             Log.d(TAG, "Failed to send message, disconnecting...");
             logout();
             disconnect();
+            Log.d(TAG, "Starting reconnect job...");
+            ReconnectJob.schedule(serviceContext);
         }
     }
 

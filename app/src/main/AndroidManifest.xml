@@ -29,8 +29,10 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-
-        <service android:name=".service.NetworkService" />
+        <service android:name=".service.NetworkService"
+            android:label="Edict Network Service" />
+        <service android:name=".service.ReconnectJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>

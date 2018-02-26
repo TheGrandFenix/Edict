@@ -57,14 +57,8 @@ public class NetworkService extends Service {
             //Log successful service startup
             Log.d(TAG, "Service ready...");
 
-            //Attempt login if user was verified
-            database = getSharedPreferences("database", 0);
-            if (database.getBoolean("verified", false)) {
-                Bundle extras = new Bundle();
-                extras.putString("email", database.getString("email", null));
-                extras.putString("password", database.getString("password", null));
-                handler.post(() -> connection.login(extras));
-            }
+            //Attempt login if verified
+            attemptLogin();
         }
         return START_STICKY;
     }
@@ -97,9 +91,33 @@ public class NetworkService extends Service {
                 case SEND_MESSAGE:
                     handler.post(() -> connection.sendMessage(3, intent.getExtras().getString("message")));
                     break;
+
+                //Handle network changes
+                case ConnectivityManager.CONNECTIVITY_ACTION:
+                    checkConnectivity();
+                    break;
             }
         }
     };
+
+    //Check if network connection has been restored
+    private void checkConnectivity() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = null;
+        if (connectivityManager != null) activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) attemptLogin();
+    }
+
+    private void attemptLogin() {
+        //Attempt login if user was verified
+        database = getSharedPreferences("database", 0);
+        if (database.getBoolean("verified", false)) {
+            Bundle extras = new Bundle();
+            extras.putString("email", database.getString("email", null));
+            extras.putString("password", database.getString("password", null));
+            handler.post(() -> connection.login(extras));
+        }
+    }
 
     //Cleanup when service is reset
     @Override

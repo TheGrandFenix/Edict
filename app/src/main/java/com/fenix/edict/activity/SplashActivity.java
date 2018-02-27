@@ -40,6 +40,7 @@ public class SplashActivity extends Activity {
         }
     }
 
+    //Receive login status if performing automatic login
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -58,5 +59,4 @@ public class SplashActivity extends Activity {
             }
         }
     };
-
 }

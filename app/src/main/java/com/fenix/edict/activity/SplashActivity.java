@@ -15,7 +15,6 @@ import static com.fenix.edict.activity.LoginActivity.*;
 
 public class SplashActivity extends Activity {
     private static final String TAG = "SPLASH_ACT";
-
     private LocalBroadcastManager broadcastManager;
 
     @Override

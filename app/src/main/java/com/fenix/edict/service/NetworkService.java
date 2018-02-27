@@ -58,7 +58,7 @@ public class NetworkService extends Service {
         //Log successful service startup
         Log.d(TAG, "Service ready...");
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     //Define service broadcast actions

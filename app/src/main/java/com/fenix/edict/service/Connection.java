@@ -7,11 +7,13 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import com.fenix.support.LoginRequest;
+import com.fenix.support.RegistrationRequest;
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -33,8 +35,8 @@ public class Connection {
 
     private Socket socket;
 
-    private BufferedWriter output;
-    private BufferedReader input;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
 
     private HandlerThread execThread;
     private Handler execHandler;
@@ -66,8 +68,8 @@ public class Connection {
             socket = new Socket();
             socket.connect(new InetSocketAddress(address, 2508), 3000);
             isConnected = true;
-            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = new ObjectOutputStream(socket.getOutputStream());
+            input = new ObjectInputStream(socket.getInputStream());
             inHandler.post(this::listen);
             Log.d(TAG, "Successfully connected to server...");
         } catch (IOException e) {
@@ -79,36 +81,30 @@ public class Connection {
 
     //Send login request to server
     void login(Bundle extras) {
-        if (!isConnected) {
-            connect();
-        }
-        String email = extras.getString("email");
-        String password = extras.getString("password");
-
-        String serverAuth = email + "|" + password;
-
-        Log.d(TAG, "Attempting login: " + serverAuth);
-        sendMessage(LOGIN_REQUEST, serverAuth);
+        if (!isConnected) connect();
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.username = extras.getString("email");
+        loginRequest.password = extras.getString("password");
+        loginRequest.firebaseId = FirebaseInstanceId.getInstance().getToken();
+        Log.d(TAG, "Attempting login: " + loginRequest.username);
+        sendMessage(LOGIN_REQUEST, loginRequest);
     }
 
     //Send registration request to server
     void register(Bundle extras) {
         if (!isConnected) connect();
-        String email = extras.getString("email");
-        String password = extras.getString("password");
-        String nickname = extras.getString("nickname");
-
-        String serverAuth = email + "|" + password + "|" + nickname;
-
-        sendMessage(REGISTRATION_REQUEST, serverAuth);
+        RegistrationRequest registrationRequest = new RegistrationRequest();
+        registrationRequest.username = extras.getString("email");
+        registrationRequest.password = extras.getString("password");
+        registrationRequest.nickname = extras.getString("nickname");
+        sendMessage(REGISTRATION_REQUEST, registrationRequest);
     }
 
     //Send message with content to server [full message]
-    synchronized void sendMessage(int messageType, String message) {
+    synchronized void sendMessage(int messageType, Object message) {
         if (isConnected && output != null) try {
             output.write(messageType);
-            output.write(message);
-            output.newLine();
+            output.writeObject(message);
             output.flush();
         } catch (IOException e) {
             Log.d(TAG, "Failed to send message, disconnecting...");
@@ -125,12 +121,12 @@ public class Connection {
             try {
                 //Receive message type and content
                 int messageType = input.read();
-                String message = input.readLine();
+                Object message = input.readObject();
 
                 //Handle message
                 execHandler.post(() -> handleMessage(messageType, message));
 
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 isConnected = false;
                 Log.d(TAG, "Failed to read message from server, disconnecting...");
                 logout();
@@ -140,7 +136,7 @@ public class Connection {
     }
 
     //Process received message
-    private void handleMessage(int messageType, String message) {
+    private void handleMessage(int messageType, Object message) {
         Log.d(TAG, "Received message...");
         switch (messageType) {
             case LOGIN_SUCCESS:

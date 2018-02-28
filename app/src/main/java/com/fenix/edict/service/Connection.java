@@ -97,6 +97,7 @@ public class Connection {
         registrationRequest.username = extras.getString("email");
         registrationRequest.password = extras.getString("password");
         registrationRequest.nickname = extras.getString("nickname");
+        registrationRequest.firebaseId = FirebaseInstanceId.getInstance().getToken();
         sendMessage(REGISTRATION_REQUEST, registrationRequest);
     }
 

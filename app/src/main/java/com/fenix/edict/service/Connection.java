@@ -31,7 +31,7 @@ public class Connection {
 
     private Context serviceContext;
 
-    private final static String address = ("192.168.1.25");
+    private final static String address = ("home.edict.cc");
 
     private Socket socket;
 

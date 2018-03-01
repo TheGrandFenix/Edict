@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="material_bluegray">#607d8b</color>
+    <color name="bluegray_weak">#19607d8b</color>
+    <color name="primary_material_light">#f5f5f5</color>
 </resources>

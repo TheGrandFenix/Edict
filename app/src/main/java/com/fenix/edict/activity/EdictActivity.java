@@ -33,7 +33,7 @@ public class EdictActivity extends Activity {
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "Unsubscribed from notifications...");
+        Log.d(TAG, "Un-subscribed from notifications...");
         super.onResume();
         FirebaseMessaging.getInstance().unsubscribeFromTopic("info-board");
 

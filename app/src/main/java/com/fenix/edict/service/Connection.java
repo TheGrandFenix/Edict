@@ -157,13 +157,6 @@ public class Connection {
                 break;
 
             case TEXT_MESSAGE:
-                /*
-                Intent newMessage = new Intent(NEW_MESSAGE_RECEIVED);
-                Bundle extras = new Bundle();
-                extras.putString("message", message);
-                newMessage.putExtras(extras);
-                NetworkService.broadcastManager.sendBroadcast(newMessage);
-                */
                 break;
         }
     }

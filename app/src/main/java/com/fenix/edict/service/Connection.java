@@ -14,6 +14,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -31,7 +32,7 @@ public class Connection {
 
     private Context serviceContext;
 
-    private final static String address = ("192.168.1.25");
+    private final static String address = ("home.edict.cc");
 
     private Socket socket;
 
@@ -66,7 +67,7 @@ public class Connection {
         try {
             //Create socket connected to the server
             socket = new Socket();
-            socket.connect(new InetSocketAddress(address, 2508), 3000);
+            socket.connect(new InetSocketAddress(InetAddress.getByName(address), 2508), 3000);
             isConnected = true;
             output = new ObjectOutputStream(socket.getOutputStream());
             input = new ObjectInputStream(socket.getInputStream());

@@ -122,15 +122,6 @@ public class NetworkService extends Service {
         handlerThread.quit();
 
         Log.d(TAG, "Service destroyed...");
-
-        PendingIntent service = PendingIntent.getService(
-                getApplicationContext(),
-                1001,
-                new Intent(getApplicationContext(), NotificationService.class),
-                PendingIntent.FLAG_ONE_SHOT);
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, service);
     }
 
     //Cleanup when service is destroyed

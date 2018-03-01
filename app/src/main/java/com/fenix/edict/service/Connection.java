@@ -31,7 +31,7 @@ public class Connection {
 
     private Context serviceContext;
 
-    private final static String address = ("home.edict.cc");
+    private final static String address = ("192.168.1.25");
 
     private Socket socket;
 
@@ -132,6 +132,8 @@ public class Connection {
                 Log.d(TAG, "Failed to read message from server, disconnecting...");
                 logout();
                 disconnect();
+                Log.d(TAG, "Starting reconnect job...");
+                ReconnectJob.schedule(serviceContext);
             }
         }
     }

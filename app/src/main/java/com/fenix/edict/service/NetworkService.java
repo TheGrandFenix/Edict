@@ -1,5 +1,7 @@
 package com.fenix.edict.service;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -120,6 +122,15 @@ public class NetworkService extends Service {
         handlerThread.quit();
 
         Log.d(TAG, "Service destroyed...");
+
+        PendingIntent service = PendingIntent.getService(
+                getApplicationContext(),
+                1001,
+                new Intent(getApplicationContext(), NotificationService.class),
+                PendingIntent.FLAG_ONE_SHOT);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, service);
     }
 
     //Cleanup when service is destroyed

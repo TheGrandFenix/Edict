@@ -43,7 +43,7 @@ public class LoginActivity extends Activity {
         passwordInput = findViewById(R.id.password_et);
 
         //Get broadcast manager
-        broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager = LocalBroadcastManager.getInstance(getApplicationContext());
     }
 
     //Restart service with login intent - on button click [REPLACE WITH BROADCAST]

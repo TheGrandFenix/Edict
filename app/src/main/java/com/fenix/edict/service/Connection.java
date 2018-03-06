@@ -1,5 +1,6 @@
 package com.fenix.edict.service;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.os.HandlerThread;
 import android.util.Log;
 
 import com.fenix.support.LoginRequest;
+import com.fenix.support.Message;
 import com.fenix.support.RegistrationRequest;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -18,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import static com.fenix.edict.activity.EdictActivity.NEW_MESSAGE;
 import static com.fenix.edict.activity.LoginActivity.*;
 
 public class Connection {
@@ -28,7 +31,7 @@ public class Connection {
     private static final int LOGOUT_REQUEST = 2;
     private static final int LOGIN_SUCCESS = 3;
     private static final int LOGIN_ERROR = 4;
-    private static final int TEXT_MESSAGE = 5;
+    static final int TEXT_MESSAGE = 5;
 
     private Context serviceContext;
 
@@ -157,8 +160,26 @@ public class Connection {
                 break;
 
             case TEXT_MESSAGE:
+                Log.d(TAG, "Received message!");
+                execHandler.post(() -> processTextMessage((Message) message));
                 break;
         }
+    }
+
+    private void processTextMessage(Message message) {
+        //Create data set from received message
+        ContentValues values = new ContentValues();
+        values.put("MESSAGE_SERVER_ID", message.messageId);
+        values.put("SENDER_ID", message.senderId);
+        values.put("TARGET_ID", 88);
+        values.put("TIMESTAMP", message.timestamp);
+        values.put("CONTENT", message.text);
+
+        //Insert new data into SQLite Table
+        NetworkService.sqliteDatabase.insert("MESSAGES", null, values);
+
+        //Broadcast new message signal
+        NetworkService.broadcastManager.sendBroadcast(new Intent(NEW_MESSAGE).putExtra("messageObject", message));
     }
 
     //Send logout request to server

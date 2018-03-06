@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.View;
 
 import com.fenix.edict.filters.LoginIntentFilter;
 import com.fenix.edict.service.Connection;
@@ -20,7 +21,7 @@ public class SplashActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager = LocalBroadcastManager.getInstance(getApplicationContext());
         broadcastManager.registerReceiver(broadcastReceiver, new LoginIntentFilter());
 
         startService(new Intent(this, NetworkService.class));

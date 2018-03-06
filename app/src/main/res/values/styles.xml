@@ -3,6 +3,7 @@
     <style name="EdictTheme" parent="Theme.AppCompat.Light.NoActionBar" >
         <item name="colorAccent">@color/material_bluegray</item>
         <item name="android:navigationBarColor">@color/material_bluegray</item>
+        <item name="android:statusBarColor">@color/material_bluegray</item>
     </style>
 
     <style name="EdictTheme.splash" parent="EdictTheme" >

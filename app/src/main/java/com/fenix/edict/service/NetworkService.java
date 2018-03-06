@@ -1,12 +1,11 @@
 package com.fenix.edict.service;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,7 +19,6 @@ import com.fenix.edict.filters.ServiceIntentFilter;
 import com.fenix.support.Message;
 
 import static com.fenix.edict.service.Connection.TEXT_MESSAGE;
-import static java.security.AccessController.getContext;
 
 public class NetworkService extends Service {
     private static final String TAG = "NET_SERVICE";
@@ -165,6 +163,15 @@ public class NetworkService extends Service {
         dbHelper.close();
 
         Log.d(TAG, "Service destroyed...");
+    }
+
+    /*Possibly obsolete
+    public static Cursor getMewMessages(long lastMessage) {
+        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES WHERE TIMESTAMP > " + Long.toString(lastMessage) + " ORDER BY MESSAGE_ID ASC",null);
+    }*/
+
+    public static Cursor getLastNMessages() {
+        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES ORDER BY TIMESTAMP ASC LIMIT 30", null);
     }
 
 }

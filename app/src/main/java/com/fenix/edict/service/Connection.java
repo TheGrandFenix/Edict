@@ -11,6 +11,7 @@ import android.util.Log;
 import com.fenix.support.LoginRequest;
 import com.fenix.support.Message;
 import com.fenix.support.RegistrationRequest;
+import com.fenix.support.ServerResponse;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class Connection {
 
     private static boolean isConnected = false;
     public static boolean isLoggedIn = false;
+    public String username = "username";
 
     Connection(Context context) {
         //Create executor thread
@@ -149,6 +151,8 @@ public class Connection {
             case LOGIN_SUCCESS:
                 Log.d(TAG, "Login success!");
                 isLoggedIn = true;
+                ServerResponse response = (ServerResponse) message;
+                username = response.nickname;
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ACK));
                 break;
 
@@ -171,6 +175,7 @@ public class Connection {
         ContentValues values = new ContentValues();
         values.put("MESSAGE_SERVER_ID", message.messageId);
         values.put("SENDER_ID", message.senderId);
+        values.put("SENDER_NICK", message.senderNick);
         values.put("TARGET_ID", 88);
         values.put("TIMESTAMP", message.timestamp);
         values.put("CONTENT", message.text);

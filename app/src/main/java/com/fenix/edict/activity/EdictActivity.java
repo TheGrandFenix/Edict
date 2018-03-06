@@ -4,24 +4,22 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.fenix.edict.R;
 import com.fenix.edict.activity.chat.MessageAdapter;
 import com.fenix.edict.filters.EdictIntentFilter;
+import com.fenix.edict.service.NetworkService;
 import com.fenix.support.Message;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingService;
 
 import java.util.ArrayList;
 
@@ -51,7 +49,16 @@ public class EdictActivity extends Activity {
 
         //Set custom adapter
         ListView messageListView = findViewById(R.id.messages_list);
+        messageListView.addFooterView(new View(this), null, true);
         messageListView.setAdapter(messageAdapter);
+
+        Cursor cursor = NetworkService.getLastNMessages();
+        while (cursor.moveToNext()) {
+            Message newMessage = new Message();
+            newMessage.senderNick = cursor.getString(cursor.getColumnIndex("SENDER_NICK"));
+            newMessage.text = cursor.getString(cursor.getColumnIndex("CONTENT"));
+            messageAdapter.add(newMessage);
+        }
 
         broadcastManager.registerReceiver(broadcastReceiver, new EdictIntentFilter());
 
@@ -74,17 +81,26 @@ public class EdictActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        //Subscribe to notifications when app is put into background
-        Log.d(TAG, "Subscribed to notifications...");
-        FirebaseMessaging.getInstance().subscribeToTopic("info-board");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //Un-subscribe from notifications when app is resumed
-        Log.d(TAG, "Un-subscribed from notifications...");
-        FirebaseMessaging.getInstance().unsubscribeFromTopic("info-board");
+        /*Load new messages from database
+        if (messageAdapter.getCount() > 0) {
+            Message lastMessage = messageAdapter.getItem(messageAdapter.getCount() - 1);
+            long lastTime = 0;
+            if (lastMessage != null) {
+                lastTime = lastMessage.timestamp;
+                Cursor cursor = NetworkService.getMewMessages(lastTime);
+                while (cursor.moveToNext()) {
+                    Message newMessage = new Message();
+                    newMessage.senderNick = cursor.getString(cursor.getColumnIndex("SENDER_NICK"));
+                    newMessage.text = cursor.getString(cursor.getColumnIndex("CONTENT"));
+                    messageAdapter.add(newMessage);
+                }
+            }
+        }*/
     }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.fenix.edict.R;
@@ -35,7 +36,7 @@ public class MessageAdapter extends ArrayAdapter<Message> {
         TextView messageDisplay = convertView.findViewById(R.id.message_tv);
 
         //Set username and password
-        username.setText(String.valueOf(message != null ? message.senderId : 0));
+        username.setText(String.valueOf(message != null ? message.senderNick : 0));
         messageDisplay.setText(message != null ? message.text : "missingtext");
 
         //Return created view

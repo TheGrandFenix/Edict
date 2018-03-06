@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class SQLiteDB extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 3;
     public static final String DATABASE_NAME = "EdictDatabase.db";
 
     public SQLiteDB(Context context) {
@@ -14,7 +14,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE MESSAGES (MESSAGE_ID INTEGER PRIMARY KEY AUTOINCREMENT, MESSAGE_SERVER_ID INTEGER NOT NULL, TIMESTAMP INTEGER NOT NULL DEFAULT ((strftime('%s', 'now'))), SENDER_ID NOT NULL, DIRECT_MESSAGE BOOLEAN DEFAULT 1 NOT NULL, TARGET_ID INTEGER NOT NULL, CONTENT TEXT)");
+        db.execSQL("CREATE TABLE MESSAGES (MESSAGE_ID INTEGER PRIMARY KEY AUTOINCREMENT, MESSAGE_SERVER_ID INTEGER NOT NULL, TIMESTAMP INTEGER NOT NULL DEFAULT ((strftime('%s', 'now'))), SENDER_ID INTEGER NOT NULL, SENDER_NICK TEXT, DIRECT_MESSAGE BOOLEAN DEFAULT 1 NOT NULL, TARGET_ID INTEGER NOT NULL, CONTENT TEXT)");
     }
 
     @Override

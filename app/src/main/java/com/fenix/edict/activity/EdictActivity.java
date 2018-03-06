@@ -10,6 +10,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -53,6 +54,9 @@ public class EdictActivity extends Activity {
         messageListView.setAdapter(messageAdapter);
 
         broadcastManager.registerReceiver(broadcastReceiver, new EdictIntentFilter());
+
+        Button sendButton = findViewById(R.id.send_btn);
+        sendButton.setOnClickListener(this::sendMessage);
     }
 
     @Override

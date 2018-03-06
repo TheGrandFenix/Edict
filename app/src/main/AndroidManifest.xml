@@ -12,20 +12,23 @@
         android:theme="@style/EdictTheme"
         android:screenOrientation="portrait">
         <activity android:name=".activity.SplashActivity"
-            android:theme="@style/EdictTheme.splash">
+            android:theme="@style/EdictTheme.splash"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".activity.LoginActivity"
-            android:theme="@style/EdictTheme">
+            android:theme="@style/EdictTheme"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
         <activity android:name=".activity.EdictActivity"
-            android:theme="@style/EdictTheme">
+            android:theme="@style/EdictTheme"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>

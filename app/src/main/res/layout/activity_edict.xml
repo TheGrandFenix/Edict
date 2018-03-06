@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/EdictTheme"
-    tools:context="com.fenix.edict.activity.EdictActivity"
     tools:layout_editor_absoluteY="25dp">
 
     <ListView
@@ -44,16 +43,15 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/message_in_hint"
-            android:inputType="textImeMultiLine"
+            android:inputType="textMultiLine"
             android:translationZ="6dp" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/send_btn"
             style="@style/EdictFlatButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:text="@string/send_button_text"
-            android:onClick="sendMessage"/>
+            android:text="@string/send_button_text" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

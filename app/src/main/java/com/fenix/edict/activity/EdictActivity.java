@@ -86,21 +86,7 @@ public class EdictActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        /*Load new messages from database
-        if (messageAdapter.getCount() > 0) {
-            Message lastMessage = messageAdapter.getItem(messageAdapter.getCount() - 1);
-            long lastTime = 0;
-            if (lastMessage != null) {
-                lastTime = lastMessage.timestamp;
-                Cursor cursor = NetworkService.getMewMessages(lastTime);
-                while (cursor.moveToNext()) {
-                    Message newMessage = new Message();
-                    newMessage.senderNick = cursor.getString(cursor.getColumnIndex("SENDER_NICK"));
-                    newMessage.text = cursor.getString(cursor.getColumnIndex("CONTENT"));
-                    messageAdapter.add(newMessage);
-                }
-            }
-        }*/
+        startService(new Intent(this, NetworkService.class));
     }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {

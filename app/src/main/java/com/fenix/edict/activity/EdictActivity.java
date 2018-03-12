@@ -72,10 +72,13 @@ public class EdictActivity extends Activity {
     }
 
     public void sendMessage(View view) {
-        Log.d(TAG, "Sending message...");
         EditText message_input = findViewById(R.id.message_input_et);
-        broadcastManager.sendBroadcast(new Intent(SEND_MESSAGE).putExtra("text", message_input.getText().toString()));
-        message_input.setText("");
+        String input = message_input.getText().toString();
+        if (!input.equals("")) {
+            Log.d(TAG, "Sending message...");
+            broadcastManager.sendBroadcast(new Intent(SEND_MESSAGE).putExtra("text", input));
+            message_input.setText("");
+        }
     }
 
     @Override

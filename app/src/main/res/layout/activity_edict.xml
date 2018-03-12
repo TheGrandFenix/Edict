@@ -49,7 +49,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:hint="@string/message_in_hint"
-            android:inputType="textMultiLine" />
+            android:inputType="textCapSentences|textAutoCorrect|textMultiLine" />
 
         <Button
             android:id="@+id/send_btn"

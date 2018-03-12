@@ -46,10 +46,16 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(username.getLayoutParams());
             params.gravity = Gravity.END;
             username.setLayoutParams(params);
+            LinearLayout.LayoutParams msgParams = new LinearLayout.LayoutParams(messageDisplay.getLayoutParams());
+            msgParams.gravity = Gravity.END;
+            messageDisplay.setLayoutParams(params);
         } else {
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(username.getLayoutParams());
             params.gravity = Gravity.START;
             username.setLayoutParams(params);
+            LinearLayout.LayoutParams msgParams = new LinearLayout.LayoutParams(messageDisplay.getLayoutParams());
+            msgParams.gravity = Gravity.START;
+            messageDisplay.setLayoutParams(params);
         }
 
         //Set username and password

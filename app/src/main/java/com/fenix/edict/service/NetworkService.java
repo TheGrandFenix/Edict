@@ -166,13 +166,17 @@ public class NetworkService extends Service {
         Log.d(TAG, "Service destroyed...");
     }
 
-    /*Possibly obsolete
-    public static Cursor getMewMessages(long lastMessage) {
-        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES WHERE TIMESTAMP > " + Long.toString(lastMessage) + " ORDER BY MESSAGE_ID ASC",null);
-    }*/
-
     public static Cursor getLastNMessages() {
         return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES ORDER BY TIMESTAMP ASC LIMIT 30", null);
+    }
+
+    public static long getLastMessageId() {
+        Cursor lastMessage = sqliteDatabase.rawQuery("SELECT MESSAGE_SERVER_ID FROM MESSAGES ORDER BY MESSAGE_SERVER_ID DESC LIMIT 1", null);
+        long id = 0;
+        if (lastMessage.moveToNext()) id = lastMessage.getLong(lastMessage.getColumnIndex("MESSAGE_SERVER_ID"));
+        Log.d(TAG, "Getting last message ID: " + id);
+        lastMessage.close();
+        return id;
     }
 
 }

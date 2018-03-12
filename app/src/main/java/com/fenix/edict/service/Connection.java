@@ -36,7 +36,7 @@ public class Connection {
 
     private Context serviceContext;
 
-    private final static String address = ("home.edict.cc");
+    private final static String address = ("192.168.1.25");
 
     private Socket socket;
 
@@ -91,6 +91,8 @@ public class Connection {
         loginRequest.username = extras.getString("email");
         loginRequest.password = extras.getString("password");
         loginRequest.firebaseId = FirebaseInstanceId.getInstance().getToken();
+        long lastMessageId = NetworkService.getLastMessageId();
+        if (lastMessageId != 0) loginRequest.lastMessageId = lastMessageId;
         Log.d(TAG, "Attempting login: " + loginRequest.username);
         sendMessage(LOGIN_REQUEST, loginRequest);
     }
@@ -178,6 +180,7 @@ public class Connection {
         values.put("TARGET_ID", 88);
         values.put("TIMESTAMP", message.timestamp);
         values.put("CONTENT", message.text);
+        Log.d(TAG, "Received message ID: " + message.messageId);
 
         //Insert new data into SQLite Table
         NetworkService.sqliteDatabase.insert("MESSAGES", null, values);

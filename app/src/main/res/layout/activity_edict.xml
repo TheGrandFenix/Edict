@@ -8,27 +8,30 @@
     android:theme="@style/EdictTheme"
     tools:layout_editor_absoluteY="25dp">
 
-    <ListView
-        android:id="@+id/messages_list"
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swipe"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_gravity="bottom"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="8dp"
-        android:footerDividersEnabled="true"
-        android:headerDividersEnabled="false"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:scrollIndicators="none"
-        android:scrollbars="none"
-        android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-    </ListView>
+        <ListView
+            android:id="@+id/messages_list"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp"
+            android:footerDividersEnabled="true"
+            android:headerDividersEnabled="false"
+            android:scrollIndicators="none"
+            android:scrollbars="none"
+            android:stackFromBottom="true"
+            android:transcriptMode="alwaysScroll" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout"

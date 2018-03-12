@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +21,6 @@ import com.fenix.edict.activity.chat.MessageAdapter;
 import com.fenix.edict.filters.EdictIntentFilter;
 import com.fenix.edict.service.NetworkService;
 import com.fenix.support.Message;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 
@@ -52,18 +53,43 @@ public class EdictActivity extends Activity {
         messageListView.addFooterView(new View(this), null, true);
         messageListView.setAdapter(messageAdapter);
 
-        Cursor cursor = NetworkService.getLastNMessages();
-        while (cursor.moveToNext()) {
+        //Load a set of recent messages from memory
+        Cursor cursor = NetworkService.getRecentMessages();
+        cursor.moveToLast();
+        while (cursor.moveToPrevious()) {
             Message newMessage = new Message();
+            newMessage.messageId = cursor.getLong(cursor.getColumnIndex("MESSAGE_SERVER_ID"));
             newMessage.senderNick = cursor.getString(cursor.getColumnIndex("SENDER_NICK"));
             newMessage.text = cursor.getString(cursor.getColumnIndex("CONTENT"));
             messageAdapter.add(newMessage);
         }
 
+        //Register broadcast receiver for new messages
         broadcastManager.registerReceiver(broadcastReceiver, new EdictIntentFilter());
 
+        //Set button action
         Button sendButton = findViewById(R.id.send_btn);
         sendButton.setOnClickListener(this::sendMessage);
+
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe);
+        refreshLayout.setOnRefreshListener(() -> {
+            if (messageAdapter.getCount() > 0) {
+                Log.d(TAG, "loadMore: start");
+                Message lastMessage = messageAdapter.getItem(0);
+                Cursor moreMessagesBefore = NetworkService.getMoreMessagesBefore(lastMessage.messageId);
+                Log.d(TAG, "Loading: " + moreMessagesBefore.getCount());
+                while (moreMessagesBefore.moveToNext()) {
+                    Message newMessage = new Message();
+                    newMessage.messageId = moreMessagesBefore.getLong(moreMessagesBefore.getColumnIndex("MESSAGE_SERVER_ID"));
+                    newMessage.senderNick = moreMessagesBefore.getString(moreMessagesBefore.getColumnIndex("SENDER_NICK"));
+                    newMessage.text = moreMessagesBefore.getString(moreMessagesBefore.getColumnIndex("CONTENT"));
+                    Log.d(TAG, "loadMore: " + newMessage.messageId);
+                    messageAdapter.insert(newMessage, 0);
+                }
+                messageListView.post(() -> messageListView.setSelection(messageAdapter.getPosition(lastMessage)));
+            }
+            refreshLayout.setRefreshing(false);
+        });
     }
 
     @Override

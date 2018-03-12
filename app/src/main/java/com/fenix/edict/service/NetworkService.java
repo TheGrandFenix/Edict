@@ -166,8 +166,13 @@ public class NetworkService extends Service {
         Log.d(TAG, "Service destroyed...");
     }
 
-    public static Cursor getLastNMessages() {
-        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES ORDER BY TIMESTAMP ASC LIMIT 30", null);
+    public static Cursor getRecentMessages() {
+        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES ORDER BY MESSAGE_SERVER_ID DESC LIMIT 50", null);
+    }
+
+    public static Cursor getMoreMessagesBefore(long lastMessageID) {
+        Log.d(TAG, "getMoreMessagesBefore: " + lastMessageID);
+        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES WHERE (MESSAGE_SERVER_ID < " + lastMessageID + ") ORDER BY MESSAGE_SERVER_ID DESC LIMIT 50", null);
     }
 
     public static long getLastMessageId() {

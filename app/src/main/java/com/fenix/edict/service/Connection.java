@@ -50,7 +50,6 @@ public class Connection {
 
     private static boolean isConnected = false;
     public static boolean isLoggedIn = false;
-    public String username = "username";
 
     Connection(Context context) {
         //Create executor thread
@@ -152,7 +151,7 @@ public class Connection {
                 Log.d(TAG, "Login success!");
                 isLoggedIn = true;
                 ServerResponse response = (ServerResponse) message;
-                username = response.nickname;
+                NetworkService.username = response.nickname;
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ACK));
                 break;
 

@@ -29,6 +29,7 @@ public class NetworkService extends Service {
     public static final String SEND_MESSAGE = "edict_send";
 
     public Connection connection;
+    public static String username = "";
     private static HandlerThread handlerThread;
     private static Handler handler;
 

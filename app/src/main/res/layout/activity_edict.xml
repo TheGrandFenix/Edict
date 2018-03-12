@@ -20,7 +20,7 @@
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
         android:scrollIndicators="none"
-        android:scrollbars="vertical"
+        android:scrollbars="none"
         android:stackFromBottom="true"
         android:transcriptMode="alwaysScroll"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"

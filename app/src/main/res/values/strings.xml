@@ -8,4 +8,6 @@
     <string name="welcome_text">Welcome to Edict!</string>
     <string name="registration_btn_text">Complete Registration</string>
     <string name="registration_message">Please choose a name to be displayed on your messages....</string>
+    <string name="message_in_hint">Type here…</string>
+    <string name="send_button_text">Send</string>
 </resources>

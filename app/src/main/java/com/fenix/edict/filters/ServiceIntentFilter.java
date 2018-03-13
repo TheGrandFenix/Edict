@@ -9,5 +9,6 @@ public class ServiceIntentFilter extends IntentFilter {
         addAction(LOGIN);
         addAction(REGISTER);
         addAction(LOGOUT);
+        addAction(SEND_MESSAGE);
     }
 }

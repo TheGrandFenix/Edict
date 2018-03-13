@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "355808966269",
+    "firebase_url": "https://edict-fenix.firebaseio.com",
+    "project_id": "edict-fenix",
+    "storage_bucket": "edict-fenix.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355808966269:android:0f12fe95e7d9a088",
+        "android_client_info": {
+          "package_name": "com.fenix.edict"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "355808966269-rne3lpiaesi3dg4u3spebqtvq2084vk9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fenix.edict",
+            "certificate_hash": "3a5635e2616b4b0d44aa3fcbcd92109f53157885"
+          }
+        },
+        {
+          "client_id": "355808966269-vn0bjhkoue98hrcqchiu9doh0mrsoe69.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjw6rsJJ-EKe56jsGMVHUCwXhAcsgq-1M"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "355808966269-vn0bjhkoue98hrcqchiu9doh0mrsoe69.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -12,7 +14,11 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.fenix.edict.database.SQLiteDB;
 import com.fenix.edict.filters.ServiceIntentFilter;
+import com.fenix.support.Message;
+
+import static com.fenix.edict.service.Connection.TEXT_MESSAGE;
 
 public class NetworkService extends Service {
     private static final String TAG = "NET_SERVICE";
@@ -23,11 +29,14 @@ public class NetworkService extends Service {
     public static final String SEND_MESSAGE = "edict_send";
 
     public Connection connection;
+    public static String username = "";
     private static HandlerThread handlerThread;
     private static Handler handler;
 
     static LocalBroadcastManager broadcastManager;
     static SharedPreferences database;
+    private static SQLiteDB dbHelper;
+    static SQLiteDatabase sqliteDatabase;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,17 +57,22 @@ public class NetworkService extends Service {
             handler = new Handler(handlerThread.getLooper());
 
             //Get broadcast manager and register receiver
-            broadcastManager = LocalBroadcastManager.getInstance(this);
+            broadcastManager = LocalBroadcastManager.getInstance(getApplicationContext());
             broadcastManager.registerReceiver(broadcastReceiver, new ServiceIntentFilter());
 
             //Attempt login if verified
             attemptLogin();
         }
 
+        if (sqliteDatabase == null) {
+            dbHelper = new SQLiteDB(this);
+            sqliteDatabase = dbHelper.getWritableDatabase();
+        }
+
         //Log successful service startup
         Log.d(TAG, "Service ready...");
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     //Define service broadcast actions
@@ -87,7 +101,13 @@ public class NetworkService extends Service {
 
                 //Handle message sending request
                 case SEND_MESSAGE:
-                    handler.post(() -> connection.sendMessage(3, intent.getExtras().getString("message")));
+                    handler.post(() -> {
+                        Log.d(TAG, "Processing message sending from service...");
+                        Message newMessage = new Message();
+                        newMessage.text = intent.getExtras().getString("text");
+                        newMessage.senderId = 256;
+                        connection.sendMessage(TEXT_MESSAGE, newMessage);
+                    });
                     break;
             }
         }
@@ -119,6 +139,9 @@ public class NetworkService extends Service {
         //Ends network thread
         handlerThread.quit();
 
+        //Close database connection
+        dbHelper.close();
+
         Log.d(TAG, "Service destroyed...");
     }
 
@@ -137,7 +160,28 @@ public class NetworkService extends Service {
         //Ends network thread
         handlerThread.quit();
 
+        //Close database connection
+        dbHelper.close();
+
         Log.d(TAG, "Service destroyed...");
+    }
+
+    public static Cursor getRecentMessages() {
+        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES ORDER BY MESSAGE_SERVER_ID DESC LIMIT 50", null);
+    }
+
+    public static Cursor getMoreMessagesBefore(long lastMessageID) {
+        Log.d(TAG, "getMoreMessagesBefore: " + lastMessageID);
+        return sqliteDatabase.rawQuery("SELECT * FROM MESSAGES WHERE (MESSAGE_SERVER_ID < " + lastMessageID + ") ORDER BY MESSAGE_SERVER_ID DESC LIMIT 50", null);
+    }
+
+    public static long getLastMessageId() {
+        Cursor lastMessage = sqliteDatabase.rawQuery("SELECT MESSAGE_SERVER_ID FROM MESSAGES ORDER BY MESSAGE_SERVER_ID DESC LIMIT 1", null);
+        long id = 0;
+        if (lastMessage.moveToNext()) id = lastMessage.getLong(lastMessage.getColumnIndex("MESSAGE_SERVER_ID"));
+        Log.d(TAG, "Getting last message ID: " + id);
+        lastMessage.close();
+        return id;
     }
 
 }

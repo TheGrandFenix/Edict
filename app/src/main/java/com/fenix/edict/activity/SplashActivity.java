@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.View;
 
 import com.fenix.edict.filters.LoginIntentFilter;
 import com.fenix.edict.service.Connection;
@@ -15,13 +16,12 @@ import static com.fenix.edict.activity.LoginActivity.*;
 
 public class SplashActivity extends Activity {
     private static final String TAG = "SPLASH_ACT";
-
     private LocalBroadcastManager broadcastManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager = LocalBroadcastManager.getInstance(getApplicationContext());
         broadcastManager.registerReceiver(broadcastReceiver, new LoginIntentFilter());
 
         startService(new Intent(this, NetworkService.class));
@@ -41,6 +41,7 @@ public class SplashActivity extends Activity {
         }
     }
 
+    //Receive login status if performing automatic login
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -59,5 +60,4 @@ public class SplashActivity extends Activity {
             }
         }
     };
-
 }

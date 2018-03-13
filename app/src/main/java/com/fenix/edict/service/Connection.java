@@ -1,5 +1,6 @@
 package com.fenix.edict.service;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,14 +8,20 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import com.fenix.support.LoginRequest;
+import com.fenix.support.Message;
+import com.fenix.support.RegistrationRequest;
+import com.fenix.support.ServerResponse;
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import static com.fenix.edict.activity.EdictActivity.NEW_MESSAGE;
 import static com.fenix.edict.activity.LoginActivity.*;
 
 public class Connection {
@@ -25,16 +32,16 @@ public class Connection {
     private static final int LOGOUT_REQUEST = 2;
     private static final int LOGIN_SUCCESS = 3;
     private static final int LOGIN_ERROR = 4;
-    private static final int TEXT_MESSAGE = 5;
+    static final int TEXT_MESSAGE = 5;
 
     private Context serviceContext;
 
-    private final static String address = ("192.168.1.25");
+    private final static String address = ("home.edict.cc");
 
     private Socket socket;
 
-    private BufferedWriter output;
-    private BufferedReader input;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
 
     private HandlerThread execThread;
     private Handler execHandler;
@@ -64,10 +71,10 @@ public class Connection {
         try {
             //Create socket connected to the server
             socket = new Socket();
-            socket.connect(new InetSocketAddress(address, 2508), 3000);
+            socket.connect(new InetSocketAddress(InetAddress.getByName(address), 2508), 3000);
             isConnected = true;
-            output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = new ObjectOutputStream(socket.getOutputStream());
+            input = new ObjectInputStream(socket.getInputStream());
             inHandler.post(this::listen);
             Log.d(TAG, "Successfully connected to server...");
         } catch (IOException e) {
@@ -79,36 +86,33 @@ public class Connection {
 
     //Send login request to server
     void login(Bundle extras) {
-        if (!isConnected) {
-            connect();
-        }
-        String email = extras.getString("email");
-        String password = extras.getString("password");
-
-        String serverAuth = email + "|" + password;
-
-        Log.d(TAG, "Attempting login: " + serverAuth);
-        sendMessage(LOGIN_REQUEST, serverAuth);
+        if (!isConnected) connect();
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.username = extras.getString("email");
+        loginRequest.password = extras.getString("password");
+        loginRequest.firebaseId = FirebaseInstanceId.getInstance().getToken();
+        long lastMessageId = NetworkService.getLastMessageId();
+        if (lastMessageId != 0) loginRequest.lastMessageId = lastMessageId;
+        Log.d(TAG, "Attempting login: " + loginRequest.username);
+        sendMessage(LOGIN_REQUEST, loginRequest);
     }
 
     //Send registration request to server
     void register(Bundle extras) {
         if (!isConnected) connect();
-        String email = extras.getString("email");
-        String password = extras.getString("password");
-        String nickname = extras.getString("nickname");
-
-        String serverAuth = email + "|" + password + "|" + nickname;
-
-        sendMessage(REGISTRATION_REQUEST, serverAuth);
+        RegistrationRequest registrationRequest = new RegistrationRequest();
+        registrationRequest.username = extras.getString("email");
+        registrationRequest.password = extras.getString("password");
+        registrationRequest.nickname = extras.getString("nickname");
+        registrationRequest.firebaseId = FirebaseInstanceId.getInstance().getToken();
+        sendMessage(REGISTRATION_REQUEST, registrationRequest);
     }
 
     //Send message with content to server [full message]
-    synchronized void sendMessage(int messageType, String message) {
+    synchronized void sendMessage(int messageType, Object message) {
         if (isConnected && output != null) try {
             output.write(messageType);
-            output.write(message);
-            output.newLine();
+            output.writeObject(message);
             output.flush();
         } catch (IOException e) {
             Log.d(TAG, "Failed to send message, disconnecting...");
@@ -125,27 +129,31 @@ public class Connection {
             try {
                 //Receive message type and content
                 int messageType = input.read();
-                String message = input.readLine();
+                Object message = input.readObject();
 
                 //Handle message
                 execHandler.post(() -> handleMessage(messageType, message));
 
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 isConnected = false;
                 Log.d(TAG, "Failed to read message from server, disconnecting...");
                 logout();
                 disconnect();
+                Log.d(TAG, "Starting reconnect job...");
+                ReconnectJob.schedule(serviceContext);
             }
         }
     }
 
     //Process received message
-    private void handleMessage(int messageType, String message) {
+    private void handleMessage(int messageType, Object message) {
         Log.d(TAG, "Received message...");
         switch (messageType) {
             case LOGIN_SUCCESS:
                 Log.d(TAG, "Login success!");
                 isLoggedIn = true;
+                ServerResponse response = (ServerResponse) message;
+                NetworkService.username = response.nickname;
                 NetworkService.broadcastManager.sendBroadcast(new Intent(LOGIN_ACK));
                 break;
 
@@ -157,15 +165,28 @@ public class Connection {
                 break;
 
             case TEXT_MESSAGE:
-                /*
-                Intent newMessage = new Intent(NEW_MESSAGE_RECEIVED);
-                Bundle extras = new Bundle();
-                extras.putString("message", message);
-                newMessage.putExtras(extras);
-                NetworkService.broadcastManager.sendBroadcast(newMessage);
-                */
+                Log.d(TAG, "Received message!");
+                execHandler.post(() -> processTextMessage((Message) message));
                 break;
         }
+    }
+
+    private void processTextMessage(Message message) {
+        //Create data set from received message
+        ContentValues values = new ContentValues();
+        values.put("MESSAGE_SERVER_ID", message.messageId);
+        values.put("SENDER_ID", message.senderId);
+        values.put("SENDER_NICK", message.senderNick);
+        values.put("TARGET_ID", 88);
+        values.put("TIMESTAMP", message.timestamp);
+        values.put("CONTENT", message.text);
+        Log.d(TAG, "Received message ID: " + message.messageId);
+
+        //Insert new data into SQLite Table
+        NetworkService.sqliteDatabase.insert("MESSAGES", null, values);
+
+        //Broadcast new message signal
+        NetworkService.broadcastManager.sendBroadcast(new Intent(NEW_MESSAGE).putExtra("messageObject", message));
     }
 
     //Send logout request to server

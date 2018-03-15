@@ -29,14 +29,18 @@ public class SplashActivity extends Activity {
         //Start chat if already logged in by service
         if(Connection.isLoggedIn) {
             broadcastManager.unregisterReceiver(broadcastReceiver);
-            startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+            startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                            Intent.FLAG_ACTIVITY_NEW_TASK));
             finish();
         }
 
         //Start login procedure if unverified
         if (!getSharedPreferences("database", 0).getBoolean("verified", false)) {
             broadcastManager.unregisterReceiver(broadcastReceiver);
-            startActivity(new Intent(this, LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+            startActivity(new Intent(this, LoginActivity.class).addFlags(
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                            Intent.FLAG_ACTIVITY_NEW_TASK));
             finish();
         }
     }
@@ -48,13 +52,17 @@ public class SplashActivity extends Activity {
             if (intent.getAction() != null) switch (intent.getAction()) {
                 case LOGIN_ACK:
                     broadcastManager.unregisterReceiver(broadcastReceiver);
-                    startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                    startActivity(new Intent(getApplicationContext(), EdictActivity.class).addFlags(
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                    Intent.FLAG_ACTIVITY_NEW_TASK));
                     finish();
                     break;
 
                 case LOGIN_ERR:
                     broadcastManager.unregisterReceiver(broadcastReceiver);
-                    startActivity(new Intent(getApplicationContext(), LoginActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK));
+                    startActivity(new Intent(getApplicationContext(), LoginActivity.class).addFlags(
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                                Intent.FLAG_ACTIVITY_NEW_TASK));
                     finish();
                     break;
             }

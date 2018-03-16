@@ -55,7 +55,14 @@ public class EdictActivity extends Activity {
 
         //Load a set of recent messages from memory
         Cursor cursor = NetworkService.getRecentMessages();
-        cursor.moveToLast();
+        if (cursor.moveToLast()) {
+            Message lnewMessage = new Message();
+            lnewMessage.messageId = cursor.getLong(cursor.getColumnIndex("MESSAGE_SERVER_ID"));
+            lnewMessage.senderNick = cursor.getString(cursor.getColumnIndex("SENDER_NICK"));
+            lnewMessage.text = cursor.getString(cursor.getColumnIndex("CONTENT"));
+            messageAdapter.add(lnewMessage);
+        }
+
         while (cursor.moveToPrevious()) {
             Message newMessage = new Message();
             newMessage.messageId = cursor.getLong(cursor.getColumnIndex("MESSAGE_SERVER_ID"));

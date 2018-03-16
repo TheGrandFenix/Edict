@@ -105,7 +105,7 @@ public class NetworkService extends Service {
                         Log.d(TAG, "Processing message sending from service...");
                         Message newMessage = new Message();
                         newMessage.text = intent.getExtras().getString("text");
-                        newMessage.senderId = 256;
+                        newMessage.senderId = 88;
                         connection.sendMessage(TEXT_MESSAGE, newMessage);
                     });
                     break;
@@ -176,12 +176,16 @@ public class NetworkService extends Service {
     }
 
     public static long getLastMessageId() {
-        Cursor lastMessage = sqliteDatabase.rawQuery("SELECT MESSAGE_SERVER_ID FROM MESSAGES ORDER BY MESSAGE_SERVER_ID DESC LIMIT 1", null);
-        long id = 0;
-        if (lastMessage.moveToNext()) id = lastMessage.getLong(lastMessage.getColumnIndex("MESSAGE_SERVER_ID"));
-        Log.d(TAG, "Getting last message ID: " + id);
-        lastMessage.close();
-        return id;
+        if (sqliteDatabase != null) {
+            Cursor lastMessage = sqliteDatabase.rawQuery("SELECT MESSAGE_SERVER_ID FROM MESSAGES ORDER BY MESSAGE_SERVER_ID DESC LIMIT 1", null);
+            long id = 0;
+            if (lastMessage.moveToNext())
+                id = lastMessage.getLong(lastMessage.getColumnIndex("MESSAGE_SERVER_ID"));
+            Log.d(TAG, "Getting last message ID: " + id);
+            lastMessage.close();
+            return id;
+        }
+        return 0;
     }
 
 }
